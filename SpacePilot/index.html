@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>3D Weltraum-Abenteuer</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(45deg, #000011, #001133, #000022);
+            font-family: 'Arial', sans-serif;
+            overflow: hidden;
+            touch-action: none;
+        }
+        
+        #gameContainer {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+        
+        #homeScreen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #000033, #001122, #002244);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            animation: pulse 3s ease-in-out infinite alternate;
+        }
+        
+        @keyframes pulse {
+            0% { background: linear-gradient(135deg, #000033, #001122, #002244); }
+            100% { background: linear-gradient(135deg, #001144, #002233, #003355); }
+        }
+        
+        #gameTitle {
+            font-size: 3em;
+            color: #00ffff;
+            text-shadow: 0 0 20px #00ffff, 0 0 40px #0088ff;
+            margin-bottom: 20px;
+            animation: glow 2s ease-in-out infinite alternate;
+            text-align: center;
+        }
+        
+        @keyframes glow {
+            0% { text-shadow: 0 0 20px #00ffff, 0 0 40px #0088ff; }
+            100% { text-shadow: 0 0 30px #00ffff, 0 0 60px #0088ff, 0 0 80px #0044ff; }
+        }
+        
+        #subtitle {
+            font-size: 1.2em;
+            color: #88aaff;
+            margin-bottom: 40px;
+            text-align: center;
+            text-shadow: 0 0 10px #88aaff;
+        }
+        
+        #playButton {
+            background: linear-gradient(45deg, #ff6b35, #f7931e);
+            color: white;
+            border: none;
+            padding: 20px 40px;
+            font-size: 24px;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 8px 25px rgba(255,107,53,0.4);
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: bold;
+        }
+        
+        #playButton:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 35px rgba(255,107,53,0.6);
+            background: linear-gradient(45deg, #ff8a5b, #ffa43e);
+        }
+        
+        #instructions {
+            margin-top: 40px;
+            color: #aaccff;
+            text-align: center;
+            font-size: 16px;
+            line-height: 1.6;
+            max-width: 400px;
+        }
+        
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle 2s ease-in-out infinite alternate;
+        }
+        
+        @keyframes twinkle {
+            0% { opacity: 0.3; transform: scale(1); }
+            100% { opacity: 1; transform: scale(1.2); }
+        }
+        
+        #ui {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: #00ff88;
+            z-index: 100;
+            font-size: 18px;
+            font-weight: bold;
+            text-shadow: 0 0 10px #00ff88;
+            background: rgba(0,0,0,0.3);
+            padding: 15px;
+            border-radius: 10px;
+            border: 2px solid rgba(0,255,136,0.3);
+            display: none;
+        }
+        
+        #controls {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            color: #88aaff;
+            z-index: 100;
+            font-size: 14px;
+            text-align: right;
+            text-shadow: 0 0 8px #88aaff;
+            background: rgba(0,0,0,0.3);
+            padding: 10px;
+            border-radius: 8px;
+            border: 2px solid rgba(136,170,255,0.3);
+            display: none;
+        }
+        
+        #gameOver {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #ffffff;
+            text-align: center;
+            z-index: 200;
+            font-size: 24px;
+            display: none;
+            background: rgba(0,0,30,0.95);
+            padding: 40px;
+            border-radius: 20px;
+            border: 3px solid #ff6644;
+            box-shadow: 0 0 40px rgba(255,102,68,0.6);
+        }
+        
+        #pauseMenu {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #ffffff;
+            text-align: center;
+            z-index: 150;
+            font-size: 20px;
+            display: none;
+            background: rgba(0,0,20,0.9);
+            padding: 30px;
+            border-radius: 15px;
+            border: 2px solid #4CAF50;
+            box-shadow: 0 0 30px rgba(76,175,80,0.4);
+        }
+        
+        .menuButton {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 10px;
+            box-shadow: 0 4px 15px rgba(76,175,80,0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .menuButton:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(76,175,80,0.4);
+        }
+        
+        .menuButton.danger {
+            background: linear-gradient(45deg, #f44336, #d32f2f);
+            box-shadow: 0 4px 15px rgba(244,67,54,0.3);
+        }
+        
+        .menuButton.danger:hover {
+            box-shadow: 0 6px 20px rgba(244,67,54,0.4);
+        }
+        
+        canvas {
+            display: block;
+        }
+        
+        #thrustIndicator {
+            position: absolute;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200px;
+            height: 20px;
+            background: rgba(0,0,0,0.5);
+            border: 2px solid #00ff88;
+            border-radius: 10px;
+            z-index: 100;
+            display: none;
+        }
+        
+        #thrustBar {
+            height: 100%;
+            background: linear-gradient(90deg, #00ff88, #ffff00, #ff6644);
+            border-radius: 8px;
+            width: 0%;
+            transition: width 0.1s ease;
+        }
+        
+        #pauseButton {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.5);
+            color: white;
+            border: 2px solid #888;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 18px;
+            z-index: 100;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <!-- Homescreen -->
+        <div id="homeScreen">
+            <h1 id="gameTitle">🌌 STAR PILOT 🚀</h1>
+            <p id="subtitle">Erkunde die Unendlichkeit des Weltraums</p>
+            <button id="playButton" onclick="showGame()">🚀 SPIEL STARTEN</button>
+            <div id="instructions">
+                <p>🎮 <strong>Steuerung:</strong> Tippe und ziehe um dein Raumschiff zu steuern</p>
+                <p>⚡ <strong>Schub:</strong> Halte länger gedrückt für mehr Power</p>
+                <p>🎯 <strong>Ziel:</strong> Weiche den Asteroiden aus und sammle Punkte</p>
+                <p>🏆 <strong>Bonus:</strong> Mehr Punkte bei höherem Schub!</p>
+            </div>
+        </div>
+        
+        <!-- Game UI -->
+        <div id="ui">
+            <div>⭐ Punkte: <span id="score">0</span></div>
+            <div>❤️ Leben: <span id="lives">3</span></div>
+            <div>🚀 Level: <span id="level">1</span></div>
+        </div>
+        
+        <button id="pauseButton" onclick="pauseGame()">⏸️</button>
+        
+        <div id="controls">
+            🎮 Tippe und ziehe um zu steuern<br>
+            🚀 Weiche den Asteroiden aus!<br>
+            ⚡ Halte länger für mehr Schub
+        </div>
+        
+        <div id="thrustIndicator">
+            <div id="thrustBar"></div>
+        </div>
+        
+        <!-- Pause Menu -->
+        <div id="pauseMenu">
+            <h2>⏸️ Spiel Pausiert</h2>
+            <button class="menuButton" onclick="resumeGame()">▶️ Weiter spielen</button>
+            <button class="menuButton" onclick="restartGame()">🔄 Neu starten</button>
+            <button class="menuButton danger" onclick="goHome()">🏠 Hauptmenü</button>
+        </div>
+        
+        <!-- Game Over Screen -->
+        <div id="gameOver">
+            <h2>🌌 Mission Beendet! 🌌</h2>
+            <p>Endpunktzahl: <span id="finalScore">0</span></p>
+            <p>Erreichte Level: <span id="finalLevel">1</span></p>
+            <button class="menuButton" onclick="restartGame()">🚀 Nochmal spielen</button>
+            <button class="menuButton danger" onclick="goHome()">🏠 Hauptmenü</button>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        let scene, camera, renderer, ship, shipGroup, asteroids = [], stars = [], particles = [];
+        let gameRunning = false;
+        let gamePaused = false;
+        let gameState = 'home'; // 'home', 'playing', 'paused', 'gameOver'
+        let score = 0;
+        let lives = 3;
+        let level = 1;
+        let speed = 0.08;
+        let baseSpeed = 0.08;
+        
+        // Verbesserte Steuerung
+        let touchStartX = 0;
+        let touchStartY = 0;
+        let currentTouchX = 0;
+        let currentTouchY = 0;
+        let shipVelocityX = 0;
+        let shipVelocityY = 0;
+        let shipTargetX = 0;
+        let shipTargetY = 0;
+        let isTouching = false;
+        let touchStartTime = 0;
+        let thrustPower = 0;
+        
+        // Animation und Effekte
+        let engineParticles = [];
+        let explosionParticles = [];
+        
+        // Homescreen Animation
+        function createHomeScreenStars() {
+            for (let i = 0; i < 50; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.width = star.style.height = (Math.random() * 3 + 1) + 'px';
+                star.style.animationDelay = Math.random() * 2 + 's';
+                document.getElementById('homeScreen').appendChild(star);
+            }
+        }
+        
+        function showGame() {
+            gameState = 'playing';
+            document.getElementById('homeScreen').style.display = 'none';
+            document.getElementById('ui').style.display = 'block';
+            document.getElementById('controls').style.display = 'block';
+            document.getElementById('thrustIndicator').style.display = 'block';
+            document.getElementById('pauseButton').style.display = 'block';
+            
+            if (!scene) {
+                init();
+            }
+            startGame();
+        }
+        
+        function goHome() {
+            gameState = 'home';
+            gameRunning = false;
+            gamePaused = false;
+            
+            document.getElementById('homeScreen').style.display = 'flex';
+            document.getElementById('ui').style.display = 'none';
+            document.getElementById('controls').style.display = 'none';
+            document.getElementById('thrustIndicator').style.display = 'none';
+            document.getElementById('pauseButton').style.display = 'none';
+            document.getElementById('pauseMenu').style.display = 'none';
+            document.getElementById('gameOver').style.display = 'none';
+        }
+        
+        function pauseGame() {
+            if (gameState === 'playing' && gameRunning) {
+                gamePaused = true;
+                gameRunning = false;
+                document.getElementById('pauseMenu').style.display = 'block';
+            }
+        }
+        
+        function resumeGame() {
+            if (gamePaused) {
+                gamePaused = false;
+                gameRunning = true;
+                document.getElementById('pauseMenu').style.display = 'none';
+            }
+        }
+        
+        function restartGame() {
+            document.getElementById('pauseMenu').style.display = 'none';
+            document.getElementById('gameOver').style.display = 'none';
+            gamePaused = false;
+            startGame();
+        }
+        
+        function init() {
+            // Szene mit verbesserter Atmosphäre
+            scene = new THREE.Scene();
+            scene.fog = new THREE.FogExp2(0x000033, 0.015);
+            
+            // Kamera mit besserem FOV
+            camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(0, 2, 8);
+            camera.lookAt(0, 0, 0);
+            
+            // Renderer mit verbesserter Qualität
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setClearColor(0x000022, 1);
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            document.getElementById('gameContainer').appendChild(renderer.domElement);
+            
+            // Verbessertes Raumschiff erstellen
+            createAdvancedShip();
+            
+            // Bessere Beleuchtung
+            setupLighting();
+            
+            // Verbesserte Sterne
+            createAdvancedStars();
+            
+            // Touch-Steuerung setup
+            setupAdvancedTouchControls();
+            
+            // Resize-Handler
+            window.addEventListener('resize', onWindowResize, false);
+            
+            // Game Loop starten
+            gameLoop();
+        }
+        
+        function createAdvancedShip() {
+            shipGroup = new THREE.Group();
+            
+            // Hauptkörper (länglicher Körper)
+            const bodyGeometry = new THREE.CylinderGeometry(0.15, 0.25, 1.2, 8);
+            const bodyMaterial = new THREE.MeshPhongMaterial({ 
+                color: 0x2194ce,
+                shininess: 100,
+                specular: 0x4444ff
+            });
+            const shipBody = new THREE.Mesh(bodyGeometry, bodyMaterial);
+            shipBody.castShadow = true;
+            shipGroup.add(shipBody);
+            
+            // Cockpit (Glaskuppel)
+            const cockpitGeometry = new THREE.SphereGeometry(0.2, 12, 8, 0, Math.PI * 2, 0, Math.PI / 2);
+            const cockpitMaterial = new THREE.MeshPhongMaterial({ 
+                color: 0x88ccff,
+                transparent: true,
+                opacity: 0.7,
+                shininess: 200
+            });
+            const cockpit = new THREE.Mesh(cockpitGeometry, cockpitMaterial);
+            cockpit.position.y = 0.3;
+            shipGroup.add(cockpit);
+            
+            // Flügel
+            const wingGeometry = new THREE.BoxGeometry(1.5, 0.05, 0.4);
+            const wingMaterial = new THREE.MeshPhongMaterial({ 
+                color: 0x1a7a9e,
+                shininess: 80
+            });
+            const leftWing = new THREE.Mesh(wingGeometry, wingMaterial);
+            leftWing.position.set(0, -0.1, 0.2);
+            leftWing.castShadow = true;
+            shipGroup.add(leftWing);
+            
+            // Triebwerke
+            const engineGeometry = new THREE.CylinderGeometry(0.08, 0.12, 0.3, 6);
+            const engineMaterial = new THREE.MeshPhongMaterial({ 
+                color: 0xff4444,
+                emissive: 0x441111
+            });
+            
+            const leftEngine = new THREE.Mesh(engineGeometry, engineMaterial);
+            leftEngine.position.set(-0.5, -0.1, -0.4);
+            leftEngine.rotation.x = Math.PI / 2;
+            shipGroup.add(leftEngine);
+            
+            const rightEngine = new THREE.Mesh(engineGeometry, engineMaterial);
+            rightEngine.position.set(0.5, -0.1, -0.4);
+            rightEngine.rotation.x = Math.PI / 2;
+            shipGroup.add(rightEngine);
+            
+            // Waffen (kleine Details)
+            const weaponGeometry = new THREE.CylinderGeometry(0.02, 0.02, 0.4, 6);
+            const weaponMaterial = new THREE.MeshPhongMaterial({ color: 0x666666 });
+            
+            const leftWeapon = new THREE.Mesh(weaponGeometry, weaponMaterial);
+            leftWeapon.position.set(-0.3, 0, 0.5);
+            leftWeapon.rotation.x = Math.PI / 2;
+            shipGroup.add(leftWeapon);
+            
+            const rightWeapon = new THREE.Mesh(weaponGeometry, weaponMaterial);
+            rightWeapon.position.set(0.3, 0, 0.5);
+            rightWeapon.rotation.x = Math.PI / 2;
+            shipGroup.add(rightWeapon);
+            
+            ship = shipGroup;
+            ship.position.set(0, 0, 0);
+            scene.add(ship);
+        }
+        
+        function setupLighting() {
+            // Umgebungslicht
+            const ambientLight = new THREE.AmbientLight(0x404080, 0.3);
+            scene.add(ambientLight);
+            
+            // Hauptlicht
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+            directionalLight.position.set(5, 10, 5);
+            directionalLight.castShadow = true;
+            directionalLight.shadow.mapSize.width = 2048;
+            directionalLight.shadow.mapSize.height = 2048;
+            scene.add(directionalLight);
+            
+            // Punktlicht für Atmosphäre
+            const pointLight = new THREE.PointLight(0x4488ff, 0.8, 50);
+            pointLight.position.set(0, 0, 10);
+            scene.add(pointLight);
+            
+            // Rötliches Licht von hinten
+            const backLight = new THREE.PointLight(0xff4444, 0.5, 30);
+            backLight.position.set(0, 5, -10);
+            scene.add(backLight);
+        }
+        
+        function createAdvancedStars() {
+            // Verschiedene Stern-Typen
+            const starTypes = [
+                { color: 0xffffff, size: 0.02 },
+                { color: 0xffffaa, size: 0.015 },
+                { color: 0xaaffff, size: 0.025 },
+                { color: 0xffaaff, size: 0.01 }
+            ];
+            
+            for (let i = 0; i < 300; i++) {
+                const starType = starTypes[Math.floor(Math.random() * starTypes.length)];
+                const starGeometry = new THREE.SphereGeometry(starType.size, 6, 6);
+                const starMaterial = new THREE.MeshBasicMaterial({ 
+                    color: starType.color,
+                    transparent: true,
+                    opacity: Math.random() * 0.8 + 0.2
+                });
+                
+                const star = new THREE.Mesh(starGeometry, starMaterial);
+                star.position.set(
+                    (Math.random() - 0.5) * 100,
+                    (Math.random() - 0.5) * 100,
+                    (Math.random() - 0.5) * -100 - 20
+                );
+                
+                star.userData = {
+                    originalOpacity: starMaterial.opacity,
+                    twinkleSpeed: Math.random() * 0.02 + 0.01
+                };
+                
+                stars.push(star);
+                scene.add(star);
+            }
+        }
+        
+        function createRoundedAsteroid() {
+            // Basis-Sphäre für rundere Form
+            const radius = Math.random() * 0.4 + 0.3;
+            const segments = 16 + Math.floor(Math.random() * 16); // Mehr Segmente für Rundheit
+            
+            const geometry = new THREE.SphereGeometry(radius, segments, segments);
+            
+            // Sanfte Verformung für natürliche Unregelmäßigkeiten
+            const positions = geometry.attributes.position;
+            const vertex = new THREE.Vector3();
+            
+            for (let i = 0; i < positions.count; i++) {
+                vertex.fromBufferAttribute(positions, i);
+                
+                // Sanfte Noise-basierte Verformung
+                const noise = 0.85 + Math.random() * 0.3; // Weniger extreme Verformung
+                vertex.multiplyScalar(noise);
+                
+                // Zusätzliche lokale Verformungen
+                const localNoise = Math.sin(vertex.x * 10) * Math.cos(vertex.y * 8) * 0.05;
+                vertex.multiplyScalar(1 + localNoise);
+                
+                positions.setXYZ(i, vertex.x, vertex.y, vertex.z);
+            }
+            
+            positions.needsUpdate = true;
+            geometry.computeVertexNormals(); // Für glatte Beleuchtung
+            
+            // Verschiedene Asteroid-Materialien
+            const asteroidMaterials = [
+                {
+                    color: 0x8B4513, // Braun
+                    roughness: 0.9,
+                    metalness: 0.1
+                },
+                {
+                    color: 0x696969, // Grau
+                    roughness: 0.8,
+                    metalness: 0.2
+                },
+                {
+                    color: 0x654321, // Dunkelbraun
+                    roughness: 0.95,
+                    metalness: 0.05
+                },
+                {
+                    color: 0x2F4F4F, // Dunkelgrau
+                    roughness: 0.85,
+                    metalness: 0.15
+                },
+                {
+                    color: 0x556B2F, // Olivgrün
+                    roughness: 0.9,
+                    metalness: 0.1
+                }
+            ];
+            
+            const materialType = asteroidMaterials[Math.floor(Math.random() * asteroidMaterials.length)];
+            
+            const material = new THREE.MeshPhongMaterial({ 
+                color: materialType.color,
+                shininess: Math.random() * 30 + 10,
+                specular: 0x222222
+            });
+            
+            const asteroid = new THREE.Mesh(geometry, material);
+            asteroid.castShadow = true;
+            asteroid.receiveShadow = true;
+            
+            // Zufällige Größe (kleine Variation)
+            const scale = 0.8 + Math.random() * 0.4;
+            asteroid.scale.setScalar(scale);
+            
+            asteroid.position.set(
+                (Math.random() - 0.5) * 12,
+                (Math.random() - 0.5) * 8,
+                -25
+            );
+            
+            asteroid.rotation.set(
+                Math.random() * Math.PI * 2,
+                Math.random() * Math.PI * 2,
+                Math.random() * Math.PI * 2
+            );
+            
+            asteroid.userData = {
+                rotationSpeed: {
+                    x: (Math.random() - 0.5) * 0.02,
+                    y: (Math.random() - 0.5) * 0.02,
+                    z: (Math.random() - 0.5) * 0.02
+                },
+                size: scale
+            };
+            
+            asteroids.push(asteroid);
+            scene.add(asteroid);
+        }
+        
+        function setupAdvancedTouchControls() {
+            const canvas = renderer.domElement;
+            
+            canvas.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                if (gameState !== 'playing' || !gameRunning) return;
+                
+                const touch = e.touches[0];
+                touchStartX = touch.clientX;
+                touchStartY = touch.clientY;
+                currentTouchX = touch.clientX;
+                currentTouchY = touch.clientY;
+                isTouching = true;
+                touchStartTime = Date.now();
+            });
+            
+            canvas.addEventListener('touchmove', (e) => {
+                e.preventDefault();
+                if (!isTouching || gameState !== 'playing' || !gameRunning) return;
+                
+                const touch = e.touches[0];
+                currentTouchX = touch.clientX;
+                currentTouchY = touch.clientY;
+                
+                // Berechne relative Bewegung
+                const deltaX = (currentTouchX - touchStartX) / window.innerWidth;
+                const deltaY = (touchStartY - currentTouchY) / window.innerHeight;
+                
+                // Sanftere, präzisere Steuerung
+                shipTargetX = Math.max(-4, Math.min(4, deltaX * 8));
+                shipTargetY = Math.max(-3, Math.min(3, deltaY * 6));
+                
+                // Schub basierend auf Touch-Dauer
+                const touchDuration = Date.now() - touchStartTime;
+                thrustPower = Math.min(1, touchDuration / 1000);
+                document.getElementById('thrustBar').style.width = (thrustPower * 100) + '%';
+            });
+            
+            canvas.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                isTouching = false;
+                thrustPower = 0;
+                document.getElementById('thrustBar').style.width = '0%';
+                
+                // Sanftes Zurückgleiten zur Mitte
+                shipTargetX *= 0.3;
+                shipTargetY *= 0.3;
+            });
+            
+            // Desktop-Unterstützung
+            canvas.addEventListener('mousedown', (e) => {
+                if (gameState !== 'playing' || !gameRunning) return;
+                
+                touchStartX = e.clientX;
+                touchStartY = e.clientY;
+                currentTouchX = e.clientX;
+                currentTouchY = e.clientY;
+                isTouching = true;
+                touchStartTime = Date.now();
+            });
+            
+            canvas.addEventListener('mousemove', (e) => {
+                if (!isTouching || gameState !== 'playing' || !gameRunning) return;
+                
+                currentTouchX = e.clientX;
+                currentTouchY = e.clientY;
+                
+                const deltaX = (currentTouchX - touchStartX) / window.innerWidth;
+                const deltaY = (touchStartY - currentTouchY) / window.innerHeight;
+                
+                shipTargetX = Math.max(-4, Math.min(4, deltaX * 8));
+                shipTargetY = Math.max(-3, Math.min(3, deltaY * 6));
+                
+                const touchDuration = Date.now() - touchStartTime;
+                thrustPower = Math.min(1, touchDuration / 1000);
+                document.getElementById('thrustBar').style.width = (thrustPower * 100) + '%';
+            });
+            
+            canvas.addEventListener('mouseup', () => {
+                isTouching = false;
+                thrustPower = 0;
+                document.getElementById('thrustBar').style.width = '0%';
+                shipTargetX *= 0.3;
+                shipTargetY *= 0.3;
+            });
+        }
+        
+        function createEngineParticles() {
+            if (!isTouching) return;
+            
+            for (let i = 0; i < 3; i++) {
+                const particleGeometry = new THREE.SphereGe
